@@ -1,0 +1,63 @@
+    generateRandomPoint() {
+        return {
+            x: _.random(0, width),
+            y: _.random(0, width)
+        };
+    }
+
+    generateRandomPoints() {
+        const count = parseInt(this.state.trainingCount);
+        return _.times(count, this.generateRandomPoint);
+    }
+
+    generatePoints() {
+        const count = parseInt(this.state.pointCount);
+        let points = _.times(count, this.generateRandomPoint);
+        this.setState({
+            points: points
+        });
+    }
+
+    generateRandomWeights() {
+        let randomWeights = {
+            x: _.random(-1.000000000000001, 1.000000000000001),
+            y: _.random(-1.000000000000001, 1.000000000000001)
+        };
+        return randomWeights;
+    }
+
+    getTeam(point) {
+        return point.x > point.y ? 1 : -1;
+    }
+
+    guessTeam(weights, point) {
+        const sum = point.x * weights.x + point.y * weights.y;
+        const team = sum > 0 ? 1 : -1;
+        return team;
+    }
+
+    train(weights, point, actualTeam) {
+        const guessedTeam = this.guessTeam(weights, point);
+        const error = actualTeam - guessedTeam;
+        console.log(`Actual Team: ${actualTeam}     Guessed Team: ${guessedTeam}    Error: ${error}`);
+        const learningRate = 0.01;
+        return {
+            x: weights.x + point.x * error * learningRate,
+            y: weights.y + point.y * error * learningRate
+        };
+    }
+
+    getTrainedWeights() {
+        const samples = this.generateRandomPoints().map(point => ({
+            point,
+            team: this.getTeam(point)
+        }));
+        let currentWeights = this.state.weights;
+        for (const sample of samples) {
+            currentWeights = this.train(currentWeights, sample.point, sample.team);
+        }
+        this.setState({
+            weights: currentWeights
+        });
+        console.log(`Trained Weights   X: ${currentWeights.x}   Y: ${currentWeights.y}`);
+    }
